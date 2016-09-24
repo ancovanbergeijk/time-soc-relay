@@ -224,7 +224,7 @@ class DbusGenerator:
 				'testrunruntime': ['/Settings/Generator0/TestRun/Duration', 7200, 1, 86400],
 				'testrunskipruntime': ['/Settings/Generator0/TestRun/SkipRuntime', 0, 0, 100000],
 				'testruntillbatteryfull': ['/Settings/Generator0/TestRun/RunTillBatteryFull', 0, 0, 1],
-				'testrunsocstart': ['/Settings/Generator0/TestRun/StartValue', 90, 0, 100]
+				'testrunskipsoc': ['/Settings/Generator0/TestRun/SkipSocValue', 90, 0, 100]
 			},
 			eventCallback=self._handle_changed_setting)
 
