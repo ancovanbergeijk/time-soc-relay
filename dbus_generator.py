@@ -6,8 +6,9 @@
 # vebus com.victronenergy.vebus.*
 # Battery and vebus monitors can be configured through the gui.
 # It then monitors SOC, AC loads, battery current and battery voltage,to auto start/stop the generator based
-# on the configuration settings. Generator can be started manually or periodically setting a tes trun period.
+# on the configuration settings. Generator can be started manually or periodically setting a testrun period.
 # Time zones function allows to use different values for the conditions along the day depending on time
+# add/change daily testrun to be only activated if battery is below certain SOC
 
 from dbus.mainloop.glib import DBusGMainLoop
 import gobject
@@ -222,7 +223,8 @@ class DbusGenerator:
 				'testruninterval': ['/Settings/Generator0/TestRun/Interval', 28, 1, 365],
 				'testrunruntime': ['/Settings/Generator0/TestRun/Duration', 7200, 1, 86400],
 				'testrunskipruntime': ['/Settings/Generator0/TestRun/SkipRuntime', 0, 0, 100000],
-				'testruntillbatteryfull': ['/Settings/Generator0/TestRun/RunTillBatteryFull', 0, 0, 1]
+				'testruntillbatteryfull': ['/Settings/Generator0/TestRun/RunTillBatteryFull', 0, 0, 1],
+				'testrunsocstart': ['/Settings/Generator0/TestRun/StartValue', 90, 0, 100]
 			},
 			eventCallback=self._handle_changed_setting)
 
@@ -288,9 +290,9 @@ class DbusGenerator:
 				self._dbusservice.add_path('/TestRunIntervalRuntime',
 										   value=self._interval_runtime(self._settings['testruninterval']),
 										   gettextcallback=self._gettext)
-				# Next tes trun date, values is 0 for test run disabled
+				# Next testrun date, values is 0 for test run disabled
 				self._dbusservice.add_path('/NextTestRun', value=None, gettextcallback=self._gettext)
-				# Next tes trun is needed 1, not needed 0
+				# Next testrun is needed 1, not needed 0
 				self._dbusservice.add_path('/SkipTestRun', value=None)
 				# Manual start
 				self._dbusservice.add_path('/ManualStart', value=0, writeable=True)
@@ -585,7 +587,7 @@ class DbusGenerator:
 
 		start = False
 		# If the accumulated runtime during the tes trun interval is greater than '/TestRunIntervalRuntime'
-		# the tes trun must be skipped
+		# the testrun must be skipped
 		needed = (self._settings['testrunskipruntime'] > self._dbusservice['/TestRunIntervalRuntime']
 					  or self._settings['testrunskipruntime'] == 0)
 		self._dbusservice['/SkipTestRun'] = int(not needed)
